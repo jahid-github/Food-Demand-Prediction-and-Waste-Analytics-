@@ -2,6 +2,7 @@
 # MIXX — Food Demand Prediction & Waste Analytics
 
 > Machine Learning–Based Food Demand Prediction and Waste Analytics for Buffet Restaurants
+
 > A Regression & Cloud-Based Decision Support System
 
 🌐 **Live Dashboard:** [https://mixx.meherix.com/](https://mixx.meherix.com/)
