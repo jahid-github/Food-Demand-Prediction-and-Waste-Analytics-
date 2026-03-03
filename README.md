@@ -1,4 +1,3 @@
----
 
 # MIXX — Food Demand Prediction & Waste Analytics
 
@@ -8,7 +7,6 @@
 🌐 **Live Dashboard:** [https://mixx.meherix.com/](https://mixx.meherix.com/)
 📄 **Project Report (PDF):** [Download Full Thesis Report](Food%20Demand%20Prediction%20and%20Waste%20Analytics.pdf) 
 
----
 
 ## Project Overview
 
