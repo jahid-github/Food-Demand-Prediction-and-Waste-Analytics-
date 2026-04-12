@@ -1,9 +1,49 @@
 [theme]
+# Keep a light base so the app feels familiar and easy to read for most users.
 base = "light"
-primaryColor = "#2b6f52"
-backgroundColor = "#fff9f1"
-secondaryBackgroundColor = "#f3ead9"
+# Use a clear green accent for buttons, focus states, and selected elements.
+primaryColor = "#2f6f5d"
+# Use a soft warm background to avoid a harsh pure-white interface.
+backgroundColor = "#fcf8f2"
+# Use a slightly darker surface color for widgets, cards, and containers.
+secondaryBackgroundColor = "#f1e7d8"
+# Keep text dark and high-contrast for comfortable reading.
 textColor = "#173126"
+# Match links to the primary accent so navigation and references feel consistent.
+linkColor = "#2f6f5d"
+# Increase rounding slightly to make the interface friendlier.
+baseRadius = "large"
+# Keep buttons pill-shaped so actions are easier to notice.
+buttonRadius = "full"
+# Make borders visible enough to separate inputs and panels cleanly.
+borderColor = "#d6c7b1"
+# Give tables and dataframes a consistent border color.
+dataframeBorderColor = "#d6c7b1"
+# Make dataframe headers distinct without creating too much visual weight.
+dataframeHeaderBackgroundColor = "#e9decd"
+# Show widget borders even when inputs are not focused for better usability.
+showWidgetBorder = true
+# Keep the sidebar visually separated from the main content.
+showSidebarBorder = true
+# Keep the default UI scale comfortable for most users.
+baseFontSize = 16
+# Use a calm, earthy set of chart colors that fits the food analytics theme.
+chartCategoricalColors = ["#2f6f5d", "#c17c2f", "#8e5c42", "#4c7fa0", "#6a8a3a", "#a34d4d"]
+
+[theme.sidebar]
+# Give the sidebar a slightly deeper tone so controls feel grouped together.
+backgroundColor = "#f4ecdf"
+# Keep inputs inside the sidebar bright enough to remain readable.
+secondaryBackgroundColor = "#fff8ef"
+# Preserve strong contrast in sidebar text.
+textColor = "#173126"
+# Reuse the same accent color for consistency across the app.
+primaryColor = "#2f6f5d"
+# Keep sidebar borders subtle but visible.
+borderColor = "#cfbea6"
+# Show widget borders in the sidebar as well.
+showWidgetBorder = true
 
 [server]
+# Use polling for file watching, which is often more reliable on synced folders.
 fileWatcherType = "poll"

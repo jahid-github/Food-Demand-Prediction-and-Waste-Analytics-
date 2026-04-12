@@ -1,7 +1,14 @@
+# Streamlit powers the web dashboard UI.
 streamlit>=1.44,<2
+# Pandas handles tabular data loading, transformation, and CSV persistence.
 pandas>=2.2,<3
+# Scikit-learn provides the regression models used for forecasting.
 scikit-learn>=1.5,<2
+# Holidays supplies the Finland holiday calendar used as a model feature.
 holidays>=0.71,<1
+# Requests is used to call the Open-Meteo weather API.
 requests>=2.32,<3
+# Google Cloud BigQuery enables optional forecast export to BigQuery.
 google-cloud-bigquery>=3.30,<4
+# PyArrow supports efficient dataframe serialization for BigQuery uploads.
 pyarrow>=17,<20
