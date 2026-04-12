@@ -1,46 +1,46 @@
 [theme]
 # Keep a light base so the app feels familiar and easy to read for most users.
 base = "light"
-# Use a clear green accent for buttons, focus states, and selected elements.
-primaryColor = "#2f6f5d"
-# Use a soft warm background to avoid a harsh pure-white interface.
-backgroundColor = "#fcf8f2"
-# Use a slightly darker surface color for widgets, cards, and containers.
-secondaryBackgroundColor = "#f1e7d8"
+# Use a balanced sage green accent for actions and focus states.
+primaryColor = "#315f56"
+# Use a soft warm-stone background instead of a flat ash gray.
+backgroundColor = "#f7f3ec"
+# Use a slightly richer card color so panels stand out from the page.
+secondaryBackgroundColor = "#efe6d7"
 # Keep text dark and high-contrast for comfortable reading.
-textColor = "#173126"
+textColor = "#1b302b"
 # Match links to the primary accent so navigation and references feel consistent.
-linkColor = "#2f6f5d"
+linkColor = "#315f56"
 # Increase rounding slightly to make the interface friendlier.
 baseRadius = "large"
 # Keep buttons pill-shaped so actions are easier to notice.
 buttonRadius = "full"
 # Make borders visible enough to separate inputs and panels cleanly.
-borderColor = "#d6c7b1"
+borderColor = "#d8ccb9"
 # Give tables and dataframes a consistent border color.
-dataframeBorderColor = "#d6c7b1"
-# Make dataframe headers distinct without creating too much visual weight.
-dataframeHeaderBackgroundColor = "#e9decd"
+dataframeBorderColor = "#d8ccb9"
+# Make dataframe headers distinct while keeping the palette soft.
+dataframeHeaderBackgroundColor = "#e7ddce"
 # Show widget borders even when inputs are not focused for better usability.
 showWidgetBorder = true
 # Keep the sidebar visually separated from the main content.
 showSidebarBorder = true
 # Keep the default UI scale comfortable for most users.
 baseFontSize = 16
-# Use a calm, earthy set of chart colors that fits the food analytics theme.
-chartCategoricalColors = ["#2f6f5d", "#c17c2f", "#8e5c42", "#4c7fa0", "#6a8a3a", "#a34d4d"]
+# Use a calm, matching chart palette that fits the food analytics theme.
+chartCategoricalColors = ["#315f56", "#b48352", "#6f845b", "#6a637d", "#4f7886", "#9a5f4e"]
 
 [theme.sidebar]
-# Give the sidebar a slightly deeper tone so controls feel grouped together.
-backgroundColor = "#f4ecdf"
-# Keep inputs inside the sidebar bright enough to remain readable.
-secondaryBackgroundColor = "#fff8ef"
+# Give the sidebar a slightly deeper warm-stone tone so controls feel grouped together.
+backgroundColor = "#ede4d5"
+# Keep inputs inside the sidebar bright enough to remain readable and layered.
+secondaryBackgroundColor = "#f8f3ea"
 # Preserve strong contrast in sidebar text.
-textColor = "#173126"
+textColor = "#1b302b"
 # Reuse the same accent color for consistency across the app.
-primaryColor = "#2f6f5d"
+primaryColor = "#315f56"
 # Keep sidebar borders subtle but visible.
-borderColor = "#cfbea6"
+borderColor = "#cfbea8"
 # Show widget borders in the sidebar as well.
 showWidgetBorder = true
 

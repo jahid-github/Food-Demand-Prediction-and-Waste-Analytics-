@@ -15,19 +15,17 @@ from mixx import (
     build_daily_input_frame,
     build_holiday_calendar,
     build_waste_summary,
-    ensure_dashboard_table,
     ensure_working_dataset,
     get_tomorrow_temperature,
     load_dataset,
     predict_next_day_all_dishes_smart,
     predict_next_day_all_dishes_with_forecast,
-    push_dashboard_to_bigquery,
     save_dataset,
 )
 from mixx.constants import DEFAULT_LATITUDE, DEFAULT_LONGITUDE
 
 # Configure the page before rendering any Streamlit elements.
-st.set_page_config(page_title="MIXX Dashboard", layout="wide")
+st.set_page_config(page_title="MIXX Forecasting Dashboard", layout="wide")
 
 
 def main() -> None:
@@ -63,9 +61,9 @@ def main() -> None:
             <div class="eyebrow">Food Demand Prediction and Waste Analytics</div>
             <h1>MIXX Streamlit Dashboard</h1>
             <p>
-                Local CSV is the default runtime so the project stays portable on GitHub,
-                in Docker, and for anyone cloning the repo. BigQuery stays available as an
-                optional export path for the original Colab -> BigQuery -> Looker Studio flow.
+                An end-to-end Python project focused on data wrangling, feature engineering,
+                model evaluation, and interactive forecasting for buffet restaurant operations.
+                The final dashboard turns the analysis into a recruiter-friendly Streamlit app.
             </p>
         </div>
         """,
@@ -105,10 +103,11 @@ def main() -> None:
             except Exception as exc:  # pragma: no cover - network dependent
                 st.error(f"Weather fetch failed: {exc}")
 
-        st.subheader("Architecture")
+        st.subheader("Project Focus")
         st.markdown(
-            "- `Local CSV -> Streamlit` is the default app mode.\n"
-            "- `Colab -> BigQuery -> Looker Studio` stays available via optional export."
+            "- `Python data wrangling and cleaning`\n"
+            "- `Model benchmarking and forecast evaluation`\n"
+            "- `Streamlit dashboard deployment`"
         )
 
     # Top-level summary metrics for the currently loaded dataset.
@@ -126,7 +125,7 @@ def main() -> None:
     )
 
     with forecast_tab:
-        # This tab is for generating next-day predictions and downloading/exporting them.
+        # This tab is for generating next-day predictions and downloading them.
         st.subheader("Next-Day Forecast")
         left_col, right_col = st.columns([1, 2], gap="large")
 
@@ -169,14 +168,6 @@ def main() -> None:
                 file_name=f"mixx_forecast_{selected_forecast_date}.csv",
                 mime="text/csv",
                 use_container_width=True,
-            )
-
-            # Optional export for users who still want to feed the BigQuery dashboard path.
-            _render_bigquery_export(
-                active_dashboard=active_dashboard,
-                selected_forecast_date=selected_forecast_date,
-                forecast_temp_c=forecast_temp_c,
-                is_holiday=int(pd.to_datetime(selected_forecast_date) in holiday_calendar),
             )
 
         with right_col:
@@ -355,54 +346,6 @@ def _format_forecast_for_display(forecast_df: pd.DataFrame) -> pd.DataFrame:
     return display_df
 
 
-def _render_bigquery_export(
-    active_dashboard: pd.DataFrame,
-    selected_forecast_date: object,
-    forecast_temp_c: float,
-    is_holiday: int,
-) -> None:
-    """Render the optional export panel for the original BigQuery workflow."""
-    with st.expander("Optional BigQuery export"):
-        st.caption(
-            "This keeps the original Colab -> BigQuery -> Looker Studio path available."
-        )
-
-        # Read export settings from environment variables so the feature stays optional.
-        project_id = os.getenv("MIXX_GCP_PROJECT", "").strip()
-        dataset_id = os.getenv("MIXX_GCP_DATASET", "mixx").strip()
-        table_id = os.getenv("MIXX_GCP_TABLE", "dashboard_predictions").strip()
-        scenario = st.text_input("Scenario", value="streamlit_forecast")
-
-        if not project_id:
-            st.info("Set `MIXX_GCP_PROJECT` and Google credentials to enable this export.")
-            return
-
-        if st.button("Export to BigQuery", use_container_width=True):
-            try:
-                # Ensure the destination dataset/table exists before loading rows into it.
-                ensure_dashboard_table(
-                    project_id=project_id,
-                    dataset_id=dataset_id,
-                    table_id=table_id,
-                )
-                # Upload the currently selected forecast as one named scenario.
-                push_dashboard_to_bigquery(
-                    dashboard_df=active_dashboard,
-                    scenario=scenario,
-                    forecast_date=str(selected_forecast_date),
-                    project_id=project_id,
-                    dataset_id=dataset_id,
-                    table_id=table_id,
-                    temp_c=forecast_temp_c,
-                    is_holiday=is_holiday,
-                )
-                st.success(
-                    f"Exported forecast to {project_id}.{dataset_id}.{table_id} for scenario `{scenario}`."
-                )
-            except Exception as exc:
-                st.error(f"BigQuery export failed: {exc}")
-
-
 def _to_csv_bytes(df: pd.DataFrame) -> bytes:
     """Convert a dataframe into bytes so Streamlit can serve it as a file download."""
     return df.to_csv(index=False).encode("utf-8")
@@ -413,40 +356,156 @@ def _inject_styles() -> None:
     st.markdown(
         """
         <style>
+            :root {
+                --mixx-bg: #f7f3ec;
+                --mixx-surface: #fbf7f1;
+                --mixx-surface-strong: #efe6d7;
+                --mixx-border: rgba(134, 109, 74, 0.18);
+                --mixx-shadow: 0 18px 34px rgba(63, 52, 38, 0.08);
+                --mixx-shadow-soft: 0 10px 22px rgba(63, 52, 38, 0.05);
+                --mixx-text: #1b302b;
+                --mixx-muted: #49645b;
+                --mixx-accent: #315f56;
+                --mixx-accent-soft: #dfeae4;
+                --mixx-highlight: #b48352;
+            }
+            /* Give the app a soft layered background instead of a flat ash tone. */
+            [data-testid="stAppViewContainer"] {
+                background:
+                    radial-gradient(circle at top left, rgba(180, 131, 82, 0.10), transparent 28%),
+                    radial-gradient(circle at top right, rgba(49, 95, 86, 0.12), transparent 30%),
+                    linear-gradient(180deg, #faf7f2 0%, var(--mixx-bg) 100%);
+            }
+            /* Keep the main content roomy and centered. */
+            .block-container {
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+            }
+            /* Give the sidebar a slightly raised panel feel. */
+            [data-testid="stSidebar"] {
+                background:
+                    linear-gradient(180deg, rgba(255, 250, 243, 0.78) 0%, rgba(237, 228, 213, 0.96) 100%);
+                box-shadow: inset -1px 0 0 rgba(134, 109, 74, 0.10);
+            }
             /* Style the header card at the top of the app. */
             .hero {
                 background:
-                    radial-gradient(circle at top left, rgba(43, 111, 82, 0.16), transparent 38%),
-                    linear-gradient(135deg, #fff7ec 0%, #f7f0de 55%, #eef5ea 100%);
-                border: 1px solid rgba(23, 49, 38, 0.08);
-                border-radius: 24px;
-                padding: 2rem 2.25rem;
-                margin-bottom: 1.25rem;
+                    radial-gradient(circle at top left, rgba(49, 95, 86, 0.18), transparent 36%),
+                    radial-gradient(circle at bottom right, rgba(180, 131, 82, 0.16), transparent 32%),
+                    linear-gradient(145deg, rgba(255, 251, 245, 0.96) 0%, rgba(243, 236, 224, 0.98) 100%);
+                border: 1px solid rgba(134, 109, 74, 0.14);
+                border-radius: 28px;
+                box-shadow: var(--mixx-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+                padding: 2.15rem 2.35rem;
+                margin-bottom: 1.4rem;
             }
             /* Main dashboard title inside the hero card. */
             .hero h1 {
-                color: #173126;
+                color: var(--mixx-text);
                 margin: 0.2rem 0 0.6rem 0;
                 font-size: 2.35rem;
+                letter-spacing: -0.02em;
             }
             /* Supporting description text inside the hero card. */
             .hero p {
-                color: #315545;
+                color: var(--mixx-muted);
                 font-size: 1rem;
                 margin: 0;
                 max-width: 52rem;
+                line-height: 1.65;
             }
             /* Small uppercase label above the hero title. */
             .eyebrow {
                 text-transform: uppercase;
                 letter-spacing: 0.12em;
                 font-size: 0.78rem;
-                color: #7d5a2d;
+                color: var(--mixx-highlight);
                 font-weight: 700;
+            }
+            /* Add a soft card surface to key dashboard widgets for a simple 3D effect. */
+            [data-testid="stMetric"],
+            [data-testid="stDataFrame"],
+            [data-testid="stVegaLiteChart"],
+            [data-testid="stFileUploader"],
+            div[data-baseweb="input"] > div,
+            div[data-baseweb="select"] > div,
+            div[data-baseweb="textarea"] > div,
+            [data-testid="stDateInputField"] {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.84) 0%, rgba(249, 244, 235, 0.98) 100%);
+                border: 1px solid var(--mixx-border);
+                border-radius: 22px;
+                box-shadow: var(--mixx-shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+            }
+            /* Improve default metric card spacing and lift. */
+            [data-testid="stMetric"] {
+                padding: 1rem 1.1rem;
             }
             /* Override Streamlit metric values so they match the app palette. */
             [data-testid="stMetricValue"] {
-                color: #173126;
+                color: var(--mixx-text);
+                letter-spacing: -0.02em;
+            }
+            /* Keep metric labels readable but quieter than the values. */
+            [data-testid="stMetricLabel"] {
+                color: var(--mixx-muted);
+            }
+            /* Style tabs as raised chips so section switching feels clearer. */
+            div[data-baseweb="tab-list"] {
+                gap: 0.6rem;
+            }
+            button[data-baseweb="tab"] {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 232, 220, 0.95) 100%);
+                border: 1px solid var(--mixx-border);
+                border-radius: 18px 18px 0 0;
+                box-shadow: var(--mixx-shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.74);
+                color: var(--mixx-muted);
+                font-weight: 600;
+                padding: 0.7rem 1rem;
+            }
+            button[data-baseweb="tab"][aria-selected="true"] {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(223, 234, 228, 0.98) 100%);
+                border-color: rgba(49, 95, 86, 0.22);
+                color: var(--mixx-text);
+            }
+            /* Give the active tab panel the same card treatment as the rest of the dashboard. */
+            .stTabs [data-baseweb="tab-panel"] {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(248, 243, 235, 0.94) 100%);
+                border: 1px solid var(--mixx-border);
+                border-radius: 0 22px 22px 22px;
+                box-shadow: var(--mixx-shadow);
+                padding: 1.2rem 1.15rem 1rem 1.15rem;
+            }
+            /* Make action buttons consistent with the theme and slightly raised. */
+            .stButton > button,
+            .stDownloadButton > button {
+                background: linear-gradient(180deg, #3d7368 0%, var(--mixx-accent) 100%);
+                border: 1px solid rgba(31, 65, 58, 0.18);
+                border-radius: 999px;
+                box-shadow: 0 14px 24px rgba(49, 95, 86, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.20);
+                color: #f8f4ee;
+                font-weight: 600;
+                min-height: 2.9rem;
+            }
+            /* Add a gentle hover lift without making the UI feel busy. */
+            .stButton > button:hover,
+            .stDownloadButton > button:hover {
+                border-color: rgba(31, 65, 58, 0.24);
+                transform: translateY(-1px);
+            }
+            /* Keep headings dark and easy to scan against the light palette. */
+            h2, h3, [data-testid="stMarkdownContainer"] h2, [data-testid="stMarkdownContainer"] h3 {
+                color: var(--mixx-text);
+            }
+            /* Make code/path displays look like small inset panels. */
+            pre {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.86) 0%, rgba(244, 238, 229, 0.98) 100%);
+                border: 1px solid var(--mixx-border);
+                border-radius: 18px;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
+            }
+            /* Keep data editors and tables integrated with the same visual system. */
+            [data-testid="stDataFrame"] {
+                padding: 0.35rem;
             }
         </style>
         """,

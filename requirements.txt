@@ -8,7 +8,3 @@ scikit-learn>=1.5,<2
 holidays>=0.71,<1
 # Requests is used to call the Open-Meteo weather API.
 requests>=2.32,<3
-# Google Cloud BigQuery enables optional forecast export to BigQuery.
-google-cloud-bigquery>=3.30,<4
-# PyArrow supports efficient dataframe serialization for BigQuery uploads.
-pyarrow>=17,<20
