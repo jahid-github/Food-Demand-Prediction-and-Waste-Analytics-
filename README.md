@@ -1,5 +1,11 @@
 # MIXX - Food Demand Prediction and Waste Analytics
 
+## Live Dashboard
+
+Use the deployed Streamlit app here:
+
+https://mixx-dashboard.streamlit.app/
+
 ## Project Focus
 
 - Python data wrangling and cleaning

@@ -1,3 +1,9 @@
+"""Streamlit entrypoint for the MIXX forecasting dashboard.
+
+This file is intentionally UI-focused. The data cleaning, modeling, and report
+generation live in the `mixx` package so the app stays thin and easier to read.
+"""
+
 from __future__ import annotations
 
 import os

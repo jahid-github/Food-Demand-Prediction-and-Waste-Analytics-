@@ -1,3 +1,5 @@
+"""Narrative analysis helpers used to explain the project in plain language."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -101,6 +103,7 @@ def build_data_profile(df: pd.DataFrame) -> dict[str, Any]:
     working = df.copy()
     working["date"] = pd.to_datetime(working["date"])
 
+    # These aggregates drive the plain-language findings shown in reports and docs.
     waste_summary = build_waste_summary(working)
     dish_mean_sales = (
         working.groupby("dish_name")["sold_qty"].mean().sort_values(ascending=False)
@@ -214,6 +217,7 @@ def describe_feature_choices() -> list[FeatureChoice]:
 
 def build_experiment_trail(df: pd.DataFrame) -> list[ExperimentNote]:
     """Summarize each model tried during experimentation."""
+    # Reformat the benchmark table once so the narrative can access metrics by model name.
     metrics_lookup = _ordered_metrics_lookup(benchmark_regression_models(df))
     return [
         ExperimentNote(
@@ -272,6 +276,7 @@ def choose_final_model(df: pd.DataFrame) -> dict[str, str | float]:
 
 def render_analysis_report(df: pd.DataFrame) -> str:
     """Render the full project narrative as markdown text."""
+    # Assemble markdown line-by-line so the report can be printed or reused elsewhere.
     lines: list[str] = [
         "# Project Analysis",
         "",
@@ -356,6 +361,7 @@ def _ordered_metrics_lookup(metrics_df: pd.DataFrame) -> dict[str, dict[str, flo
     metrics_lookup: dict[str, dict[str, float]] = {}
     indexed = metrics_df.set_index("Model")
 
+    # Keep a fixed order so the report reads consistently even if the dataframe is sorted by RMSE.
     for model_name in ORDERED_MODEL_NAMES:
         row = indexed.loc[model_name]
         metrics_lookup[model_name] = {

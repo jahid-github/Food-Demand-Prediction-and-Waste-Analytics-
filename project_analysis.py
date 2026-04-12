@@ -1,3 +1,5 @@
+"""Command-line helper that prints the project's markdown analysis report."""
+
 from __future__ import annotations
 
 from pathlib import Path
