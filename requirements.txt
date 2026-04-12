@@ -1,0 +1,7 @@
+streamlit>=1.44,<2
+pandas>=2.2,<3
+scikit-learn>=1.5,<2
+holidays>=0.71,<1
+requests>=2.32,<3
+google-cloud-bigquery>=3.30,<4
+pyarrow>=17,<20

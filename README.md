@@ -1,228 +1,201 @@
+# MIXX - Food Demand Prediction and Waste Analytics
 
-# MIXX — Food Demand Prediction & Waste Analytics
+Machine learning based food demand prediction and waste analytics for buffet restaurants.
 
-> Machine Learning–Based Food Demand Prediction and Waste Analytics for Buffet Restaurants
+This repository now supports two deployment paths:
 
-> A Regression & Cloud-Based Decision Support System
+1. `Local CSV -> Streamlit`
+2. `Google Colab -> BigQuery -> Looker Studio`
 
-🌐 **Live Dashboard:** [https://mixx.meherix.com/](https://mixx.meherix.com/)
-📄 **Project Report (PDF):** [Download Full Project Report](Food%20Demand%20Prediction%20and%20Waste%20Analytics.pdf) 
+The default app runtime is local CSV because it is the easiest way to keep the project portable on GitHub, reusable by other people, and deployable with Docker without requiring Google Cloud credentials.
 
+## What the project does
 
-## Project Overview
+- Predicts next-day dish demand
+- Tracks cooked, sold, and wasted quantities
+- Benchmarks regression models
+- Supports dish-level daily input updates
+- Keeps BigQuery export available for the original dashboard flow
 
-Food waste in buffet restaurants is a major operational and environmental challenge.
+## Final model
 
-Overproduction → Waste & Cost
-Underproduction → Customer dissatisfaction
+The notebook compares three approaches:
 
-This project develops **MIXX**, a machine learning–based decision support system that:
+| Model | MAE | RMSE | MAPE (%) |
+| --- | ---: | ---: | ---: |
+| Linear Regression | 10.20 | 13.06 | 9.36 |
+| Random Forest | 10.29 | 13.60 | 9.22 |
+| Naive Baseline | 15.69 | 19.32 | 14.69 |
 
-* Predicts next-day dish demand
-* Calculates food waste quantity & percentage
-* Compares regression models
-* Visualizes results in a live cloud dashboard
+Linear Regression remains the selected default model because it is simpler to explain, cheaper to run, and matches the original notebook decision.
 
-The focus of the project is **understanding machine learning concepts**, not just writing Python code.
+## Current architectures
 
----
+### Option A: Local first Streamlit app
 
-## Problem Statement
+Default for this repo:
 
-How can buffet restaurants:
-
-1. Accurately predict next-day food demand?
-2. Reduce overproduction and food waste?
-3. Use data-driven decision-making instead of intuition?
-
-The problem is formulated as a **supervised regression task**.
-
----
-
-## Machine Learning Approach
-
-### Target Variable
-
-`y = next-day demand`
-
-### Input Features (X)
-
-* Temperature
-* Holiday indicator (0/1)
-* Historical demand (lag feature)
-* Dish encoding
-
----
-
-## Model Comparison
-
-| Model             | MAE   | RMSE  | MAPE (%) |
-| ----------------- | ----- | ----- | -------- |
-| Linear Regression | 10.20 | 13.06 | 9.36     |
-| Random Forest     | 10.29 | 13.60 | 9.22     |
-| Naive Baseline    | 15.69 | 19.32 | 14.69    |
-
-### Final Model: Linear Regression
-
-Although Random Forest slightly improved accuracy, Linear Regression was selected because:
-
-* High interpretability
-* Lower computational complexity
-* Easier explanation to stakeholders
-* Better alignment with learning objectives
-
-This demonstrates understanding of **model trade-offs**, not just performance metrics.
-
----
-
-## Evaluation Metrics
-
-* **MAE (Mean Absolute Error)**
-* **RMSE (Root Mean Squared Error)**
-* **MAPE (Mean Absolute Percentage Error)**
-
-This ensures proper regression model evaluation.
-
----
-
-## Food Waste Analytics
-
-Waste is calculated using:
-
-```
-waste_qty = max(cooked_qty − sold_qty, 0)
-waste_pct = (waste_qty / cooked_qty) × 100
+```text
+CSV -> Python modules -> Streamlit dashboard
 ```
 
-This enables:
+Why this is the default:
 
-* Identification of overproduced dishes
-* Monitoring of waste trends
-* Sustainability tracking
-* Operational optimization
+- Works directly from GitHub
+- Easy to run locally
+- Easy to package with Docker
+- No cloud credentials required
+- Other people can clone and use it immediately
 
----
+Persistence behavior:
 
-## System Architecture
+- The app reads from the seed dataset `mixx_synthetic_restaurant_data.csv`
+- On first run it creates a writable runtime copy at `data/runtime/restaurant_data.csv`
+- Daily updates are written to the runtime CSV
+- In Docker, mount `data/runtime` as a volume if you want writes to survive container restarts
 
+### Option B: Original cloud dashboard flow
+
+Still supported:
+
+```text
+Google Colab -> BigQuery -> Looker Studio
 ```
-Google Colab → BigQuery → Looker Studio
+
+Use this if you want:
+
+- Shared cloud storage
+- Looker Studio dashboards
+- A managed analytics layer
+- Scenario history inside BigQuery
+
+The Streamlit app includes an optional BigQuery export panel. If Google Cloud credentials and environment variables are present, the current forecast can be pushed into the same `dashboard_predictions` table pattern used by the notebook.
+
+## Project structure
+
+```text
+app.py
+mixx/
+  constants.py
+  data.py
+  modeling.py
+  weather.py
+  bigquery_export.py
+mixx_synthetic_restaurant_data.csv
+data/runtime/
+requirements.txt
+Dockerfile
+MIXX_Final_Model.ipynb
 ```
 
-### Google Colab
+## Python modules extracted from the notebook
 
-* Data preprocessing
-* Feature engineering
-* Model training
-* Prediction generation
-* Waste calculation
+The notebook logic was moved into reusable `.py` files:
 
-### BigQuery
+- `mixx/data.py`
+  - load and save CSV data
+  - build the daily input table
+  - summarize waste
+- `mixx/modeling.py`
+  - create lag features
+  - benchmark models
+  - generate baseline forecasts
+  - generate weather-aware forecasts
+  - append daily actuals and refresh forecasts
+- `mixx/weather.py`
+  - fetch tomorrow temperature from Open-Meteo
+- `mixx/bigquery_export.py`
+  - create the BigQuery table
+  - export Streamlit forecasts to BigQuery
 
-* Cloud data warehouse
-* Scenario tracking
-* Historical storage
+## Run locally
 
-### Looker Studio
+Install dependencies:
 
-* Interactive dashboard
-* Scenario filtering
-* Waste + prediction comparison
-* Real-time visualization
+```bash
+pip install -r requirements.txt
+```
 
----
+Start the Streamlit app:
 
-## Demonstration Scenarios
+```bash
+python -m streamlit run app.py
+```
 
-### Demo 1 – Baseline
+## Run with Docker
 
-* Historical data only
-* Pure ML prediction
+Build the image:
 
-### Demo 2 – Daily Input
+```bash
+docker build -t mixx-dashboard .
+```
 
-* Staff inputs cooked & sold quantities
-* Waste calculated automatically
-* Model updated
+Run the container:
 
-### Demo 3 – New Dish
+```bash
+docker run --rm -p 8501:8501 -v "${PWD}/data/runtime:/app/data/runtime" mixx-dashboard
+```
 
-* New dish without history
-* Fallback strategy applied
-* Demonstrates robustness
+Open:
 
----
+```text
+http://localhost:8501
+```
 
-## Live Dashboard
+## Environment variables
 
-👉 View the working system here:
+Optional runtime variables:
 
-**[https://mixx.meherix.com/](https://mixx.meherix.com/)**
+- `MIXX_DATA_PATH`
+  - Custom path for the writable runtime CSV
+- `MIXX_SOURCE_DATA_PATH`
+  - Custom path for the seed CSV
+- `MIXX_LATITUDE`
+  - Latitude for weather lookup
+- `MIXX_LONGITUDE`
+  - Longitude for weather lookup
 
-The dashboard includes:
+Optional BigQuery variables:
 
-* Scenario selector
-* Prediction vs Waste comparison
-* Dish-level analytics
-* Real-time BigQuery data updates
+- `MIXX_GCP_PROJECT`
+- `MIXX_GCP_DATASET`
+- `MIXX_GCP_TABLE`
+- `GOOGLE_APPLICATION_CREDENTIALS`
 
+If `MIXX_GCP_PROJECT` is not set, the app stays in local CSV mode and BigQuery export remains disabled.
 
-## Future Roadmap
+## Streamlit app features
 
-This project can evolve into a full production-ready MIXX platform:
+- Weather-aware forecast mode
+- Baseline forecast mode
+- Daily actuals entry with dynamic dish rows
+- Local CSV persistence
+- Runtime CSV download
+- Waste trend view
+- Model benchmark table
+- Optional BigQuery export
 
-### 1️⃣ Full Web Software
+## Notes on deployment choice
 
-* Dedicated MIXX SaaS dashboard
-* Authentication & user roles
-* Multi-restaurant support
+For this repository, the best default deployment choice is:
 
-### 2️⃣ POS Integration
+```text
+Local CSV + Streamlit + Docker
+```
 
-* Direct data sync from restaurant systems
-* Automated daily updates
+Reason:
 
-### 3️⃣ Advanced ML Models
+- It keeps the project simple for GitHub users
+- It avoids forcing every user to set up BigQuery
+- It is easy to demonstrate and grade
+- It can still grow into a cloud architecture later
 
-* XGBoost
-* LSTM (time-series)
-* AutoML pipelines
+If you later want a public production workflow, you can keep the Streamlit app as the front end and move persistence to BigQuery, a database, or object storage without changing the forecasting logic too much.
 
-### 4️⃣ Real-Time Model Retraining
+## Original notebook
 
-* Automated retraining pipeline
-* Performance monitoring
+The notebook is still included as:
 
-### 5️⃣ Computer Vision Waste Detection
+- `MIXX_Final_Model.ipynb`
 
-* Smart bin camera system
-* Object detection models
-* Automatic waste classification
-* Real sustainability impact reporting
-
----
-
-## Key Learning Outcomes
-
-This project demonstrates understanding of:
-
-* Supervised learning
-* Regression modeling
-* Feature engineering
-* Model comparison
-* Evaluation metrics
-* Cloud architecture integration
-* ML explainability
-* Business-oriented AI
-
-
-# Why This Project Stands Out
-
-* Combines ML + Cloud + Sustainability
-* Demonstrates model reasoning (not just coding)
-* Includes model comparison
-* Shows real-world architecture
-* Live working dashboard
-* Clear business impact
-
-                                                      **THE END**
+It remains useful as the project report, experiment log, and Colab-first reference implementation.
